@@ -6,6 +6,8 @@ from lib.core.config import Requied_function_name
 from lib.core.common import transPathtoImpType
 from lib.core.log import logger
 
+from thirdpart.IPy import IPy
+
 
 def loadScript():
     path, script_name, suffix = transPathtoImpType(conf.SCRIPT_NAME)
@@ -37,15 +39,29 @@ def loadTarget():
             print i
 
     def _ip_mask_mode(target):
-        print target
+        try:
+            ip_list = IPy.IP(target)
+        except Exception as e:
+            sys.exit(logger.error(str(e)))
+
+        for i in ip_list:
+            print i
 
     def _ip_range_mode(target):
         start = int(target.strip().split('-')[0].split('.')[-1])
-        stop = int(target.strip().split('-')[-1]) + 1
+        stop = int(target.strip().split('-')[-1])
+
+        if start >= stop:
+            msg = "The given IP range: '%s's lower bound IP is greater than upper bound. Please set IP range like this: 192.192.168.1.25-155." % target
+            sys.exit(logger.error(msg))
+        elif start > 255 or stop > 255:
+            msg = "The given IP range: '%s' is out of the normal range(0~255). Please check and reset." % target
+            sys.exit(logger.error(msg))
+
         body = target.strip().split('-')[0].split('.')[:3]
         ip_list = []
 
-        for num in xrange(start, stop):
+        for num in xrange(start, stop + 1):
             ip_list.append('.'.join(body) + '.%s' % str(num))
 
         for ip in ip_list:

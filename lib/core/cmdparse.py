@@ -33,7 +33,7 @@ OPTIONS_HELP = {
         '-iN': {
             'metavar': 'IP/MASK',
             'dest': 'ip',
-            'help': 'generate target IP from IP/MASK (e.g. 192.168.1.1/24)',
+            'help': 'generate target IP from IP/MASK (e.g. 192.168.1.0/24)',
         },
         '-iR': {
             'metavar': 'IP Range',
