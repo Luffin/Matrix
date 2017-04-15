@@ -1,7 +1,8 @@
 import argparse
 import sys
 
-from log import logger
+# from log import logger
+from config import Version
 
 OPTIONS_HELP = {
     'Init': {
@@ -12,7 +13,7 @@ OPTIONS_HELP = {
         '-s': {
             'metavar': 'Scipt Name',
             'dest': 'script_name',
-            'help': 'use script',
+            'help': 'use script. (e.g. [-s st02-045] or [-s script/struts/st02-045.py])',
         },
         '--show': {
             'help': 'show all scripts on ./script by listing script names',
@@ -33,30 +34,33 @@ OPTIONS_HELP = {
             'metavar': 'IP/MASK',
             'dest': 'ip',
             'help': 'generate target IP from IP/MASK (e.g. 192.168.1.1/24)',
-        }
-    },
-    'Search Engines': {
+        },
+        '-iR': {
+            'metavar': 'IP Range',
+            'dest': 'ip_range',
+            'help': 'generate target IP from IP range (e.g. 192.168.1.25-155)'
+        },
         '-Gg': {
             'metavar': 'Google',
             'dest': 'google',
-            'help': 'search target by using Google.',
+            'help': 'search targets by using Google.',
         },
         '-Ze': {
             'metavar': 'Zoom Eye',
-            'dest': 'zomm_eye',
-            'help': 'search target by using Zoom Eye.',
+            'dest': 'zoom_eye',
+            'help': 'search targets by using Zoom Eye.',
         },
         '-Sd': {
             'metavar': 'Shodan',
             'dest': 'shodan',
-            'help': 'search target by using Shodan.',
+            'help': 'search targets by using Shodan.',
         }
     },
     'Output': {
         '-o': {
             'metavar': 'Output',
             'dest': 'output',
-            'help': 'output the result to given name',
+            'help': 'output the result to given name. Default will be set like ROOT_PATH/output/20170101_12_30.txt',
         }
     },
     # 'Misc': {
@@ -84,7 +88,7 @@ def cmdparser():
     )
 
     target = parser.add_argument_group('Target')
-    _target = target.add_mutually_exclusive_group(required=True)
+    _target = target.add_mutually_exclusive_group()
     _target.add_argument('-u', metavar=OPTIONS_HELP['Target']['-u']['metavar'],
                          dest=OPTIONS_HELP['Target']['-u']['dest'],
                          help=OPTIONS_HELP['Target']['-u']['help'])
@@ -94,6 +98,18 @@ def cmdparser():
     _target.add_argument('-iN', metavar=OPTIONS_HELP['Target']['-iN']['metavar'],
                          dest=OPTIONS_HELP['Target']['-iN']['dest'],
                          help=OPTIONS_HELP['Target']['-iN']['help'])
+    _target.add_argument('-iR', metavar=OPTIONS_HELP['Target']['-iR']['metavar'],
+                         dest=OPTIONS_HELP['Target']['-iR']['dest'],
+                         help=OPTIONS_HELP['Target']['-iR']['help'])
+    _target.add_argument('-Gg', metavar=OPTIONS_HELP['Target']['-Gg']['metavar'],
+                         dest=OPTIONS_HELP['Target']['-Gg']['dest'],
+                         help=OPTIONS_HELP['Target']['-Gg']['help'])
+    _target.add_argument('-Ze', metavar=OPTIONS_HELP['Target']['-Ze']['metavar'],
+                         dest=OPTIONS_HELP['Target']['-Ze']['dest'],
+                         help=OPTIONS_HELP['Target']['-Ze']['help'])
+    _target.add_argument('-Sd', metavar=OPTIONS_HELP['Target']['-Sd']['metavar'],
+                         dest=OPTIONS_HELP['Target']['-Sd']['dest'],
+                         help=OPTIONS_HELP['Target']['-Sd']['help'])
 
     script = parser.add_argument_group('Script')
     script.add_argument('-s', metavar=OPTIONS_HELP['Script']['-s']['metavar'],
@@ -101,17 +117,8 @@ def cmdparser():
                         help=OPTIONS_HELP['Script']['-s']['help'])
     script.add_argument('--show', action='store_true', help=OPTIONS_HELP['Script']['--show']['help'])
 
-    search = parser.add_argument_group('Search Engines')
-    _search = search.add_mutually_exclusive_group()
-    _search.add_argument('-Gg', metavar=OPTIONS_HELP['Search Engines']['-Gg']['metavar'],
-                         dest=OPTIONS_HELP['Search Engines']['-Gg']['dest'],
-                         help=OPTIONS_HELP['Search Engines']['-Gg']['help'])
-    _search.add_argument('-Ze', metavar=OPTIONS_HELP['Search Engines']['-Ze']['metavar'],
-                         dest=OPTIONS_HELP['Search Engines']['-Ze']['dest'],
-                         help=OPTIONS_HELP['Search Engines']['-Ze']['help'])
-    _search.add_argument('-Sd', metavar=OPTIONS_HELP['Search Engines']['-Sd']['metavar'],
-                         dest=OPTIONS_HELP['Search Engines']['-Sd']['dest'],
-                         help=OPTIONS_HELP['Search Engines']['-Sd']['help'])
+    # search = parser.add_argument_group('Search Engines')
+    # _search = search.add_mutually_exclusive_group()
 
     output = parser.add_argument_group('Output')
     output.add_argument('-o', metavar=OPTIONS_HELP['Output']['-o']['metavar'],
@@ -119,11 +126,13 @@ def cmdparser():
                         help=OPTIONS_HELP['Output']['-o']['help'])
 
     misc = parser.add_argument_group('Misc')
-    misc.add_argument('-v', '--version', action='version', version='test 1.0')
+    misc.add_argument('-v', '--version', action='version', version=Version)
     misc.add_argument('-h', '--help', action='help', help='show this help message and exit')
 
     args = parser.parse_args()
-    logger.info('Parsing options...')
+    # logger.info('Parsing options...')
+    if len(sys.argv) < 2:
+        sys.exit(parser.print_help())
     return args
 
 
